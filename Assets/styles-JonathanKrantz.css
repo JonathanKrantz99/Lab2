@@ -103,12 +103,24 @@ html, body
     width: 100%;
     height: fit-content;
     overflow: scroll;
-    overflow-x: hidden;
     display: flex;
     flex-flow: row;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+}
+
+::-webkit-scrollbar
+{
+    width: 0.2em;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+::-webkit-scrollbar-thumb {
+    background: #888;
 }
 
 .charachters div, .favourites div
@@ -175,22 +187,20 @@ html, body
     color: #fff3f2;
 }
 
+
 .hidden
 {
     display: none;
 }
 
-::-webkit-scrollbar 
+.animation
 {
-    width: 0.2em;
+    animation-name: clicked;
+    animation-duration: 1s;
 }
-  
-::-webkit-scrollbar-track 
+
+@keyframes clicked
 {
-    background: #f1f1f1;
-}
-  
-::-webkit-scrollbar-thumb 
-{
-    background: #888;
+    0% {background-color: rgb(0, 255, 0);}
+    100% {background-color: transparent;}
 }

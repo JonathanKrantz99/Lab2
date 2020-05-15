@@ -1,4 +1,5 @@
 window.addEventListener('load', async () => {
+    // Get list of charachters, then create all event listeners
     let list = await getStarWarsPeopleInfo();
     createEventListeners(list);
 });
@@ -15,6 +16,8 @@ async function getStarWarsPeopleInfo() {
             let response = await fetch(url);
             let poepleData = await response.json();
 
+            // if response is OK, loop through it and create people objects
+            // and add them to a list
             if (response.ok) {
                 for (let i = 0; i < poepleData.results.length; i++) {
                     let person =
@@ -26,18 +29,21 @@ async function getStarWarsPeopleInfo() {
                     peopleList.push(person);
                 }
 
+                // Get next url
                 url = poepleData.next;
 
                 if (poepleData.next !== null) {
                     url = url.replace('http', 'https');
                 }
 
+                // if there's no next url, break out of the loop
                 if (poepleData.next == null) {
                     success = true;
                     break;
                 }
             }
 
+            // If response is not ok, show error message
             else {
                 loadingMessage.innerText = "Data could not be fetched, please try again later...";
                 break;
@@ -47,21 +53,25 @@ async function getStarWarsPeopleInfo() {
 
         if (success) {
 
+            // If the API requests were successfull, create DOM-elements
+            // and add them to the cahrachters div
             const listContainer = document.querySelector('.charachters');
             peopleList.map(x => createDomElements(x, "add"))
             .forEach(element => {
                 listContainer.appendChild(element);
             });
 
+            // Hide the loading message
             let loadingText = document.querySelector('#loading');
             loadingText.classList.add('hidden');
 
+            // Populate the datalist in the searchbar
             addToDataList(peopleList)
             return peopleList;
         }
     }
-
-    catch
+    
+    catch(error)
     {
         loadingMessage.innerText = "Data fetch completely failed";
     }
@@ -78,6 +88,7 @@ function addToDataList(peopleList) {
     }
 }
 
+// Create a DOM-element, creates different elements depending where it's called from
 function createDomElements(person, buttonType) {
     let el = document.createElement('div');
 
@@ -91,11 +102,15 @@ function createDomElements(person, buttonType) {
 
     let button = document.createElement('button');
 
+    // If the button type is "add", the DOM-element is going to the 
+    // all charchers list
     if (buttonType === "add") {
         button.style.marginBottom = '1em';
         button.addEventListener('click', function () { addFromAllList(person, el) });
     }
 
+    // If the button type is "change" the DOM-element is going to the
+    // favourites list
     else if (buttonType === "change") {
 
         button.style.marginBottom = '1em';
@@ -108,6 +123,8 @@ function createDomElements(person, buttonType) {
     return el;
 }
 
+// Run when the add button is clicked on an element from the "charachters list"
+// and add it to the favourites list
 function addFromAllList(person, parent) {
 
     let parentSpan = parent.querySelector('span');
@@ -121,6 +138,7 @@ function addFromAllList(person, parent) {
     favouritesContainer.appendChild(el);
 }
 
+// Run when the h3 is clicked on an element from the favorites list
 function changeCharachter(person, el) {
     let addButton = document.getElementById('add');
     let saveButton = document.getElementById('save');
@@ -128,20 +146,24 @@ function changeCharachter(person, el) {
     let charachterInput = document.getElementById('charachter-input');
     let birthInput = document.getElementById('birth-input');
 
+    // Hide the add button and show the save button
     addButton.classList.add('hidden');
     saveButton.classList.remove('hidden');
 
     charachterInput.value = person.name;
     birthInput.value = person.birth
 
+    // set the charachter variable to the favorite element that was clicked
     charachterElement = el;
 }
 
+// Run when the delete button is clicked
 function deleteCharachter(childElement) {
     let parent = document.querySelector('.favourites');
     parent.removeChild(childElement);
 }
 
+// Create event listeners
 function createEventListeners(list) {
 
     let addButton = document.getElementById('add');
@@ -171,6 +193,9 @@ function createEventListeners(list) {
 }
 
 let charachterElement;
+
+// Run when the save button is clicked. It changes the favourites DOM-element(charachterElement)
+// that it got from the changeCharachter function
 function updateCharachter() {
     let saveButton = document.getElementById('save');
     let addButton = document.getElementById('add');
@@ -191,6 +216,8 @@ function updateCharachter() {
     saveButton.classList.add('hidden');
 }
 
+// Run when the add button is clicked and adds the values from the input
+// to the favourites list
 function addToFavorites(list) {
     let foundInList = false;
     let favouritesContainer = document.querySelector('.favourites')
@@ -200,6 +227,7 @@ function addToFavorites(list) {
     let charachterInputValue = charachterInput.value;
     let birthInputValue = birthInput.value;
 
+    // If there's no value in the charachter name input, alert and return.
     if (charachterInputValue === "") {
         charachterInput.value = "";
         birthInput.value = "";
@@ -207,8 +235,12 @@ function addToFavorites(list) {
         return;
     }
 
+    // If the birthinput is empty, check the chachters list from the API
+    // for a match and use its birth.
     if (birthInputValue === "") {
         for (let i = 0; i < list.length; i++) {
+
+            // If found create a DOM-element with the charachter from the API
             if (list[i].name.toLowerCase() === charachterInputValue.toLowerCase()) {
                 let element = createDomElements(list[i], "change");
 
@@ -217,6 +249,8 @@ function addToFavorites(list) {
             }
         }
 
+        // If it wasn't found among the API charachter, create a new person object
+        // with only a name. The birth will be "undefined"
         if (!foundInList) {
             let person =
             {
@@ -228,6 +262,8 @@ function addToFavorites(list) {
         }
     }
 
+    // If there is a charchter name input and a birth input value, create a new person
+    // object with those values and add it to the favourites list
     else {
 
         let person =
