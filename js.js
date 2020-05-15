@@ -1,49 +1,71 @@
 window.addEventListener('load', async () => {
     let list = await getStarWarsPeopleInfo();
     createEventListeners(list);
-})
+});
 
 async function getStarWarsPeopleInfo() {
+    let loadingMessage = document.querySelector('#loading');
     let url = 'https://swapi.dev/api/people/';
     let peopleList = [];
 
-    while (true) {
-        let response = await fetch(url);
-        let poepleData = await response.json();
+    try {
+        let success = false;
 
-        for (let i = 0; i < poepleData.results.length; i++) {
-            let person =
-            {
-                name: poepleData.results[i].name,
-                birth: poepleData.results[i].birth_year
-            };
+        while (true) {
+            let response = await fetch(url);
+            let poepleData = await response.json();
 
-            peopleList.push(person);
+            if (response.ok) {
+                for (let i = 0; i < poepleData.results.length; i++) {
+                    let person =
+                    {
+                        name: poepleData.results[i].name,
+                        birth: poepleData.results[i].birth_year
+                    };
+
+                    peopleList.push(person);
+                }
+
+                url = poepleData.next;
+
+                if (poepleData.next !== null) {
+                    url = url.replace('http', 'https');
+                }
+
+                if (poepleData.next == null) {
+                    success = true;
+                    break;
+                }
+            }
+
+            else {
+                loadingMessage.innerText = "Data could not be fetched, please try again later...";
+                break;
+            }
+
         }
 
-        url = poepleData.next;
+        if (success) {
 
-        if(poepleData.next !== null)
-        {
-            url = url.replace('http', 'https');
-        }
+            const listContainer = document.querySelector('.charachters');
+            peopleList.map(x => createDomElements(x, "add"))
+            .forEach(element => {
+                listContainer.appendChild(element);
+            });
 
-        if (poepleData.next == null) {
-            break;
+            let loadingText = document.querySelector('#loading');
+            loadingText.classList.add('hidden');
+
+            addToDataList(peopleList)
+            return peopleList;
         }
     }
 
-    const listContainer = document.querySelector('.charachters');
-    let elements = peopleList.map(x => createDomElements(x, "add"))
-        .forEach(element => {
-            listContainer.appendChild(element);
-        });
+    catch
+    {
+        loadingMessage.innerText = "Data fetch completely failed";
+    }
 
-    addToDataList(peopleList)
-    
-    let loadingText = document.querySelector('#loading');
-    loadingText.classList.add('hidden');
-    return peopleList;
 }
 
 function addToDataList(peopleList) {
@@ -55,7 +77,6 @@ function addToDataList(peopleList) {
         dataList.appendChild(data);
     }
 }
-
 
 function createDomElements(person, buttonType) {
     let el = document.createElement('div');
@@ -122,6 +143,7 @@ function deleteCharachter(childElement) {
 }
 
 function createEventListeners(list) {
+
     let addButton = document.getElementById('add');
     let saveButton = document.getElementById('save');
     let allButton = document.getElementById('all');
@@ -178,8 +200,7 @@ function addToFavorites(list) {
     let charachterInputValue = charachterInput.value;
     let birthInputValue = birthInput.value;
 
-    if (charachterInputValue === "")
-    {
+    if (charachterInputValue === "") {
         charachterInput.value = "";
         birthInput.value = "";
         alert("You must enter a name!");
